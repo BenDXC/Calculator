@@ -26,12 +26,16 @@ The numbers and operations are classed as buttons to receive user Input
 
 # 3. Conversions between temperature units (Celsius/Fahrenheit)
 
-    The Formula of Fahrenheit to Celsuis is:
-    ![Alt text](image-4.png)
-    The Formula of Celsuis to Fahrenheit is:
-    ![Alt text](image-5.png)
+    The formula for converting Fahrenheit to Celsius is C = 5/9(F-32).
+    The Formula of Celsuis to Fahrenheit is: °F = (°C × 9/5) + 32
 
 # 4. Conversions between Metric and Imperial units for mass (g/oz) and length (cm/inches)
+
+    oz = g * 0.035274
+    g = oz / 0.035274
+
+    Inches = Centimeters / 2.54
+    Centimeters = Inches * 2.54
 
 # 5. Conversion of a decimal number to binary
 
@@ -39,7 +43,10 @@ The numbers and operations are classed as buttons to receive user Input
 
 # 6. Conversion of a binary number to decimal
 
-    ![Alt text](image-6.png)
+    Step 1: Write down (1010)2 and determine the positions, namely the powers of 2 that the digit belongs to.
+    Step 2: Represent the number in terms of its positions. (1 * 23) + (0 * 22) + (1 * 21) + (0 * 20)
+    Step 3: (1 * 8) + (0 * 4) + (1 * 2) + (0 * 1) = 8 + 0 + 2 + 0 = 10
+    Therefore, (1010)2 = (10)10
 
 # 7. Conversion of a decimal number to hexadecimal
 
