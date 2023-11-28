@@ -10,6 +10,8 @@ Used Java.swing to create the user interface
 
 The numbers and operations are classed as buttons to receive user Input
 
+The exit fuction must be called to close the calculator without any errors in exceptions
+
 # 8 Tasks
 
 # 1. Addition, subtraction, multiplication, and division of two numbers
