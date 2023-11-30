@@ -2,7 +2,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
-public class calculations {
+public class calculations extends run {
     static char reset; /* Used for Task 2 */
 
     /** -------Calculation-Tasks 2-8--------------- */
@@ -59,7 +59,7 @@ public class calculations {
                 }
         }
         JOptionPane.showMessageDialog(null, "The result is: " + result); /* Outputs Answer */
-        run.exitFunction();
+        exitFunction.exitfunction();
     }
 
     public static void conversionsofTemperatureUnits() {
@@ -110,7 +110,7 @@ public class calculations {
             JOptionPane.showMessageDialog(null, "You have to input numbers 1 or 2", "Error", JOptionPane.ERROR_MESSAGE);
             conversionsofTemperatureUnits(); // Loops until correct input is given
         }
-        run.exitFunction();
+        exitFunction.exitfunction();
     }
 
     public static void conversionsOfMassandImperialUnits() {
@@ -135,7 +135,7 @@ public class calculations {
             JOptionPane.showMessageDialog(null,
                     "The number is " + number_CM + " Inches" + " Converted into Centimetres is " + Answer + "CM");
 
-            run.exitFunction();
+            exitFunction.exitfunction();
         }
 
         else if (number == 2) {
@@ -155,7 +155,7 @@ public class calculations {
             Answer = inches_number * to_Inches; // it computes the conversion from CM to Inches
             JOptionPane.showMessageDialog(null, "The number is " + inches_number + " Centimetres"
                     + " Converted into Inches is " + Answer + "Inches");
-            run.exitFunction();
+            exitFunction.exitfunction();
         } else if (number == 3) {
 
             final double to_Grams = 28.35; // Conversion rate as a constant
@@ -173,13 +173,13 @@ public class calculations {
             Answer = number_Grams * to_Grams; // Computes Answer into Grams
             JOptionPane.showMessageDialog(null,
                     "The number is " + number_Grams + " Ounces" + " Converted into Grams is " + Answer + "Grams");
-            run.exitFunction();
+            exitFunction.exitfunction();
         } else if (number == 4) {
             final double to_Ounces = 0.035; // Conversion rate as a constant
             double Answer;
             double number_Ounces;
 
-            String Input = JOptionPane.showInputDialog("Enter a number in Ounces to convert to Grams");// grabs user
+            String Input = JOptionPane.showInputDialog("Enter a number in Ounces to convert to Grams");// grabs user //
                                                                                                        // input
             Pattern p = Pattern.compile("[A-Z,a-z,&%$#@!()*^]");
             Matcher m = p.matcher(Input);
@@ -191,7 +191,7 @@ public class calculations {
             Answer = number * to_Ounces;// Computes Answer to Ounces
             JOptionPane.showMessageDialog(null,
                     "The number is " + number_Ounces + " Grams" + " Converted into Ounces is " + Answer + "Ounces");
-            run.exitFunction();
+            exitFunction.exitfunction();
         } else {
             JOptionPane.showMessageDialog(null, "You have to input numbers between 1 to 4", "Error",
                     JOptionPane.ERROR_MESSAGE);
@@ -220,7 +220,7 @@ public class calculations {
             Binary = num % 2 + Binary; /* Number has found the remainder and added to Binary */
         }
         JOptionPane.showMessageDialog(null, "The Binary Number is: " + Binary);
-        run.exitFunction();
+        exitFunction.exitfunction();
     }
 
     public static void converttoDenary()
@@ -253,7 +253,7 @@ public class calculations {
                 }
             }
             JOptionPane.showMessageDialog(null, "The Decimal Number is: " + Decimal);
-            run.exitFunction();
+            exitFunction.exitfunction();
         } else {
             JOptionPane.showMessageDialog(null, "You can only input numbers 0 and 1", "Error",
                     JOptionPane.ERROR_MESSAGE);
@@ -283,7 +283,7 @@ public class calculations {
             number = number / 16; /* Then the number is divided by 16 to find the last digit */
         }
         JOptionPane.showMessageDialog(null, "The Hexadecimal number is: " + result + "\n");
-        run.exitFunction();
+        exitFunction.exitfunction();
     }
 
     public static void converttoDenaryH() {
@@ -300,7 +300,6 @@ public class calculations {
             JOptionPane.showMessageDialog(null, "Please enter 0 - 9, A - F");
             converttoDenaryH(); /* Task 8 */
         }
-
         hex = hex.toUpperCase(); // Turns characters into UPPERCASE
         int val = 0; // Sets the output as 0
         for (int i = 0; i < hex.length(); i++) // The loop allows us to add 1 to the power when multiplying by 16
@@ -310,7 +309,7 @@ public class calculations {
             val = 16 * val + d; // Returns the outcome after multiplying by 16 and adding the decimal number
         }
         JOptionPane.showMessageDialog(null, "The Decimal number is: " + val);
-        run.exitFunction();
+        exitFunction.exitfunction();
     }
 
 }

@@ -1,6 +1,4 @@
-import javax.swing.JOptionPane;
 import java.awt.EventQueue;
-import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -11,7 +9,7 @@ import javax.swing.SwingConstants;
 
 public class run {
 
-    private JFrame frame; /* Initialise Frame */
+    protected JFrame frame; /* Initialise Frame */
 
     double firstnum; /* Variables to store each number before operations */
     double secondnum;
@@ -19,7 +17,7 @@ public class run {
     String operations; /* Variable for Addition, Subtraction, Multiplication, Division & Modulo */
     String Answer;
     static String Text; /* Used for Exit Function */
-    private JTextField Txt_Display; /* Main Part of the Calculator's Display */
+    protected JTextField Txt_Display; /* Main Part of the Calculator's Display */
 
     /** * Launch the application */
     public static void main(String[] args) {
@@ -42,7 +40,7 @@ public class run {
 
     /** * Initialise the contents of the frame */
 
-    private void initialize() {
+    protected void initialize() {
         /** -------------------Borders & Text-Box--------------------------- */
         frame = new JFrame();
         frame.setBounds(100, 100, 539, 389);
@@ -215,30 +213,34 @@ public class run {
             public void actionPerformed(ActionEvent e) {
                 String Answer;
                 secondnum = Double.parseDouble(Txt_Display.getText());
-                if (operations == "+") {
-                    result = firstnum + secondnum;
-                    Answer = String.valueOf(result);
-                    Txt_Display.setText(Answer);
-                } else if (operations == "-") {
-                    result = firstnum - secondnum;
-                    Answer = String.valueOf(result);
-                    Txt_Display.setText(Answer);
-                } else if (operations == "*") {
-                    result = firstnum * secondnum;
-                    Answer = String.valueOf(result);
-                    Txt_Display.setText(Answer);
-                } else if (operations == "/") {
-                    result = firstnum / secondnum;
-                    Answer = String.valueOf(result);
-                    ;
-                    Txt_Display.setText(Answer);
-                } else if (operations == "%") {
-                    result = firstnum % secondnum;
-                    Answer = String.valueOf(result);
-                    ;
-                    Txt_Display.setText(Answer);
-                } else {
-                    Txt_Display.setText("Error");
+                switch (operations) {
+                    case "+":
+                        result = firstnum + secondnum;
+                        Answer = String.valueOf(result);
+                        Txt_Display.setText(Answer);
+                        break;
+                    case "-":
+                        result = firstnum - secondnum;
+                        Answer = String.valueOf(result);
+                        Txt_Display.setText(Answer);
+                        break;
+                    case "*":
+                        result = firstnum * secondnum;
+                        Answer = String.valueOf(result);
+                        Txt_Display.setText(Answer);
+                        break;
+                    case "/":
+                        result = firstnum / secondnum;
+                        Answer = String.valueOf(result);
+                        Txt_Display.setText(Answer);
+                        break;
+                    case "%":
+                        result = firstnum % secondnum;
+                        Answer = String.valueOf(result);
+                        Txt_Display.setText(Answer);
+                        break;
+                    default:
+                        Txt_Display.setText("Error");
                 }
             }
         });
@@ -249,6 +251,7 @@ public class run {
 
         JButton btn_Decimal = new JButton(".");
         btn_Decimal.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 if (!Txt_Display.getText().contains(".")) {
                     Txt_Display.setText(Txt_Display.getText() + btn_Decimal.getText());
@@ -372,22 +375,5 @@ public class run {
         });
         btnConverttoDenary.setBounds(263, 275, 250, 23);
         frame.getContentPane().add(btnConverttoDenary);
-    }
-
-    /** Exit Function */
-    public static void exitFunction() {
-        String message = "Type Y to continue or N to exit";
-        String user_input = JOptionPane.showInputDialog(message);
-        char choice = user_input.charAt(0);
-        if (choice == 'Y' || choice == 'y') {
-            run obj = new run();
-            run.main(null);
-            obj.initialize();
-        } else {
-            run obj = new run();
-            JOptionPane.showMessageDialog(null, "Thanks for using our calculator");
-            obj.Txt_Display.setText(Text);
-            obj.frame.dispatchEvent(new WindowEvent(obj.frame, WindowEvent.WINDOW_CLOSING));
-        }
     }
 }
