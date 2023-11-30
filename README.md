@@ -17,19 +17,26 @@ The exit fuction must be called to close the calculator without any errors in ex
 # 1. Addition, subtraction, multiplication, and division of two numbers
 
     This is operated by the user interface
-    ![Alt text](image-2.png)
+
+![Alt text](image-2.png)
 
 # 2. Power, modulo, and square/cube roots
 
     Math Functions via Java.Math
-    ![Alt text](image-3.png)
+
+![Alt text](image-3.png)
 
     Switch case conditional Statement
 
 # 3. Conversions between temperature units (Celsius/Fahrenheit)
 
     The formula for converting Fahrenheit to Celsius is C = 5/9(F-32).
+
+![Alt text](image-4.png)
+
     The Formula of Celsuis to Fahrenheit is: °F = (°C × 9/5) + 32
+
+![Alt text](image-5.png)
 
 # 4. Conversions between Metric and Imperial units for mass (g/oz) and length (cm/inches)
 
@@ -42,6 +49,8 @@ The exit fuction must be called to close the calculator without any errors in ex
 # 5. Conversion of a decimal number to binary
 
     Divide this number by 2 until the remainder is 0 or 1.
+
+![Alt text](image-6.png)
 
 # 6. Conversion of a binary number to decimal
 
@@ -70,3 +79,5 @@ The exit fuction must be called to close the calculator without any errors in ex
     Step 1: Write the decimal equivalent of each digit of the number in hexadecimal form (from the above table)
     Step 2: Multiply the digits from right to left with exponents of 160, 161, 162, ... in order starting from the right most digit.
     Step 3: Then add all the products. The resultant sum is the number in the decimal system.
+
+![Alt text](image-1.png)
