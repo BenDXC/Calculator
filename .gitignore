@@ -1,0 +1,42 @@
+# Maven build artifacts
+calculator/target/
+target/
+
+# Compiled class files
+*.class
+
+# JAR files (except in lib/)
+*.jar
+!lib/*.jar
+
+# Maven specific
+calculator/.mvn/
+.mvn/
+
+# IDE specific
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Test reports (generated during CI)
+calculator/target/surefire-reports/
+calculator/target/site/
+
+# JaCoCo coverage
+*.exec
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
