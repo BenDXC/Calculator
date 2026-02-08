@@ -34,12 +34,48 @@ jobs:
             exit 1
           fi
 
-      # Check if tag already exists
+      # Check if tag already exists with comprehensive validation
       - name: Check if tag exists
+        id: check_tag
         run: |
-          if git rev-parse "${{ github.event.inputs.version }}" >/dev/null 2>&1; then
-            echo "Error: Tag ${{ github.event.inputs.version }} already exists"
+          # Fetch all tags from remote
+          git fetch --tags --force
+          
+          VERSION="${{ github.event.inputs.version }}"
+          EXISTS=false
+          
+          # Check 1: Local tag existence
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "⚠️  Tag $VERSION exists locally"
+            EXISTS=true
+          fi
+          
+          # Check 2: Remote tag existence
+          if git ls-remote --tags origin | grep -q "refs/tags/$VERSION$"; then
+            echo "⚠️  Tag $VERSION exists on remote"
+            EXISTS=true
+          fi
+          
+          # Check 3: Check all local tags
+          if git tag -l | grep -q "^$VERSION$"; then
+            echo "⚠️  Tag $VERSION found in local tag list"
+            EXISTS=true
+          fi
+          
+          if [ "$EXISTS" = true ]; then
+            echo "::error::Tag $VERSION already exists. Cannot create duplicate tag."
+            echo "## ❌ Duplicate Tag Detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Tag:** $VERSION" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** Already exists" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ This tag already exists and cannot be created again." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Existing tags:**" >> $GITHUB_STEP_SUMMARY
+            git tag -l "v*" | tail -10 >> $GITHUB_STEP_SUMMARY
             exit 1
+          else
+            echo "✅ Tag $VERSION is new - proceeding with creation"
           fi
 
       # Configure git
@@ -54,8 +90,30 @@ jobs:
           git tag -a "${{ github.event.inputs.version }}" -m "${{ github.event.inputs.message }}: ${{ github.event.inputs.version }}"
           git push origin "${{ github.event.inputs.version }}"
           
+      # Verify tag was created
+      - name: Verify tag creation
+        run: |
+          # Wait a moment for tag to propagate
+          sleep 2
+          
+          # Verify tag exists
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ github.event.inputs.version }}$"; then
+            echo "✅ Tag ${{ github.event.inputs.version }} successfully created and pushed"
+          else
+            echo "::error::Tag creation verification failed"
+            exit 1
+          fi
+
       # Output success message
       - name: Tag created successfully
         run: |
           echo "✅ Tag ${{ github.event.inputs.version }} has been created and pushed"
           echo "Tag URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Tag Created Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Message:** ${{ github.event.inputs.message }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "ℹ️ The 'Create Release' workflow will trigger automatically to create the GitHub release." >> $GITHUB_STEP_SUMMARY
