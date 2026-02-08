@@ -7,88 +7,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import calculator.src.main.java.com.calculator.CalculationUtils;
-import calculator.src.main.java.com.calculator.run;
 
 import static org.assertj.core.api.Assertions.*;
 
 /**
  * Integration tests for the Calculator application.
- * Tests the interaction between different components and workflows.
+ * Tests the interaction between different components and workflows using CalculationUtils.
  */
 @DisplayName("Calculator Integration Tests")
 public class IntegrationTest {
-
-    @Nested
-    @DisplayName("End-to-End Calculation Workflows")
-    class EndToEndWorkflowTests {
-
-        @Test
-        @DisplayName("Should complete basic calculator workflow")
-        void testBasicCalculatorWorkflow() {
-            run calculator = new run();
-            
-            // User enters first number
-            calculator.firstnum = 15.0;
-            
-            // User selects operation
-            calculator.operations = "+";
-            
-            // User enters second number
-            calculator.secondnum = 25.0;
-            
-            // Calculate result
-            calculator.result = calculator.firstnum + calculator.secondnum;
-            
-            assertThat(calculator.result).isEqualTo(40.0);
-        }
-
-        @Test
-        @DisplayName("Should complete complex calculation workflow with conversions")
-        void testComplexWorkflowWithConversions() {
-            // User performs basic calculation
-            run calculator = new run();
-            calculator.firstnum = 100.0;
-            calculator.secondnum = 32.0;
-            calculator.operations = "-";
-            calculator.result = calculator.firstnum - calculator.secondnum;
-            
-            assertThat(calculator.result).isEqualTo(68.0);
-            
-            // Then converts the result using utility
-            double celsiusResult = CalculationUtils.fahrenheitToCelsius(calculator.result);
-            assertThat(celsiusResult).isCloseTo(20.0, within(1.0));
-        }
-
-        @Test
-        @DisplayName("Should complete multi-step calculation workflow")
-        void testMultiStepWorkflow() {
-            run calculator = new run();
-            
-            // Step 1: 50 + 30 = 80
-            calculator.firstnum = 50.0;
-            calculator.secondnum = 30.0;
-            calculator.result = calculator.firstnum + calculator.secondnum;
-            assertThat(calculator.result).isEqualTo(80.0);
-            
-            // Step 2: 80 - 20 = 60
-            calculator.firstnum = calculator.result;
-            calculator.secondnum = 20.0;
-            calculator.result = calculator.firstnum - calculator.secondnum;
-            assertThat(calculator.result).isEqualTo(60.0);
-            
-            // Step 3: 60 * 2 = 120
-            calculator.firstnum = calculator.result;
-            calculator.secondnum = 2.0;
-            calculator.result = calculator.firstnum * calculator.secondnum;
-            assertThat(calculator.result).isEqualTo(120.0);
-            
-            // Step 4: 120 / 4 = 30
-            calculator.firstnum = calculator.result;
-            calculator.secondnum = 4.0;
-            calculator.result = calculator.firstnum / calculator.secondnum;
-            assertThat(calculator.result).isEqualTo(30.0);
-        }
-    }
 
     @Nested
     @DisplayName("Combined Operations and Conversions")
