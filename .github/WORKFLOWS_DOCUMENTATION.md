@@ -199,15 +199,29 @@ on:
 - ✅ Publishes to GitHub Packages
 - ✅ Creates comprehensive release summary
 
-### Version Format
+### Version Format: Semantic Versioning
+
 ```
-v{YEAR}.{MONTH}.{DAY}-build.{BUILD_NUMBER}
+vMAJOR.MINOR.PATCH
 
 Examples:
-- v2026.02.08-build.1  (first build on Feb 8, 2026)
-- v2026.02.08-build.5  (fifth build on Feb 8, 2026)
-- v2026.03.15-build.12 (12th build on Mar 15, 2026)
+- v1.0.0  (Initial release)
+- v1.0.1  (Patch - bug fixes)
+- v1.1.0  (Minor - new features)
+- v2.0.0  (Major - breaking changes)
 ```
+
+### Automatic Version Bumping
+
+The workflow automatically determines the version bump based on commit messages:
+
+| Commit Message | Version Bump | Example |
+|----------------|--------------|---------|
+| `feat!:` or `BREAKING CHANGE:` | **MAJOR** | v1.5.3 → v**2**.0.0 |
+| `feat:` | **MINOR** | v1.5.3 → v1.**6**.0 |
+| `fix:`, `docs:`, `test:`, etc. | **PATCH** | v1.5.3 → v1.5.**4** |
+
+**See `.github/SEMANTIC_VERSIONING_GUIDE.md` for complete details.**
 
 ### Use Case
 **Continuous Deployment** - Every merge to main automatically creates a release.

@@ -35,14 +35,57 @@ jobs:
       - name: Run tests
         run: mvn -B test --file calculator/pom.xml
 
-      # Generate version based on timestamp
-      - name: Generate version
+      # Generate semantic version
+      - name: Generate semantic version
         id: version
         run: |
-          VERSION="v$(date +'%Y.%m.%d')-build.${{ github.run_number }}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "version_number=$(date +'%Y.%m.%d').${{ github.run_number }}" >> $GITHUB_OUTPUT
-          echo "Generated version: $VERSION"
+          # Fetch all tags
+          git fetch --tags
+          
+          # Get the latest semantic version tag
+          LATEST_TAG=$(git tag -l "v*.*.*" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          
+          if [ -z "$LATEST_TAG" ]; then
+            # No previous version found, start with v1.0.0
+            NEW_VERSION="v1.0.0"
+            echo "No previous version found. Starting with v1.0.0"
+          else
+            # Parse the version (remove 'v' prefix)
+            VERSION_WITHOUT_V="${LATEST_TAG#v}"
+            
+            # Split into major.minor.patch
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_WITHOUT_V"
+            
+            # Check commit messages to determine version bump
+            # If any commit has BREAKING CHANGE or starts with "feat!:", increment major
+            # If any commit starts with "feat:", increment minor
+            # Otherwise, increment patch
+            
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%s")
+            
+            if echo "$COMMITS" | grep -qiE '(BREAKING CHANGE|^feat!:|^fix!:|^refactor!:)'; then
+              # Major version bump
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              echo "Breaking change detected - Major version bump"
+            elif echo "$COMMITS" | grep -qE '^feat(\(.*\))?:'; then
+              # Minor version bump (new feature)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              echo "New feature detected - Minor version bump"
+            else
+              # Patch version bump (bug fixes, docs, etc.)
+              PATCH=$((PATCH + 1))
+              echo "Patch update - Patch version bump"
+            fi
+            
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "version_number=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+          echo "Generated semantic version: $NEW_VERSION"
 
       # Check if release already exists
       - name: Check for duplicate release
@@ -84,8 +127,7 @@ jobs:
           echo "## Release Information" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
           echo "- **Version:** ${{ steps.version.outputs.version }}" >> CHANGELOG.md
-          echo "- **Build Number:** ${{ github.run_number }}" >> CHANGELOG.md
-          echo "- **Build Date:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
+          echo "- **Release Date:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
           echo "- **Commit SHA:** ${{ github.sha }}" >> CHANGELOG.md
           echo "- **Branch:** ${{ github.ref_name }}" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
@@ -139,6 +181,25 @@ jobs:
           echo "- ✅ **Build Status:** SUCCESS" >> CHANGELOG.md
           echo "- ✅ **JAR Created:** calculator-${{ steps.version.outputs.version_number }}.jar" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
+          echo "## Version Type" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          
+          # Determine version type
+          LATEST_TAG=$(git tag -l "v*.*.*" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          if [ -n "$LATEST_TAG" ]; then
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%s")
+            if echo "$COMMITS" | grep -qiE '(BREAKING CHANGE|^feat!:|^fix!:|^refactor!:)'; then
+              echo "🔴 **MAJOR** - Breaking changes introduced" >> CHANGELOG.md
+            elif echo "$COMMITS" | grep -qE '^feat(\(.*\))?:'; then
+              echo "🟡 **MINOR** - New features added (backwards compatible)" >> CHANGELOG.md
+            else
+              echo "🟢 **PATCH** - Bug fixes and improvements" >> CHANGELOG.md
+            fi
+          else
+            echo "🎉 **INITIAL** - First release" >> CHANGELOG.md
+          fi
+          echo "" >> CHANGELOG.md
+          
           echo "## Artifacts" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
           echo "This release includes the following artifacts:" >> CHANGELOG.md
@@ -289,8 +350,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 🚀 Release ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Number:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.version.outputs.version }} (Semantic Versioning)" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Release URL:** ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
