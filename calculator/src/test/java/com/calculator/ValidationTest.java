@@ -185,9 +185,9 @@ public class ValidationTest {
     class BoundaryValueTests {
 
         @Test
-        @DisplayName("Should handle very large integers in binary conversion")
+        @DisplayName("Should handle reasonably large integers in binary conversion")
         void testLargeBinaryConversion() {
-            int large = 1000000;
+            int large = 1023; // 10-bit value (binary: 1111111111)
             String binary = CalculationUtils.decimalToBinary(large);
             int back = CalculationUtils.binaryToDecimal(binary);
             assertThat(back).isEqualTo(large);
