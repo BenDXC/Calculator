@@ -4,17 +4,20 @@ This is an example of the CHANGELOG.md file that will be automatically generated
 
 ---
 
-# CHANGELOG - Release v2026.02.08-build.5
+# CHANGELOG - Release v1.1.0
 
 ## Release Information
 
-- **Version:** v2026.02.08-build.5
-- **Build Number:** 5
-- **Build Date:** 2026-02-08 15:30:45 UTC
+- **Version:** v1.1.0
+- **Release Date:** 2026-02-08 15:30:45 UTC
 - **Commit SHA:** a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
 - **Branch:** main
 
-## Changes Since v2026.02.08-build.4
+## Version Type
+
+🟡 **MINOR** - New features added (backwards compatible)
+
+## Changes Since v1.0.0
 
 ### Features
 - feat: Add square root calculation to calculator (John Doe, a1b2c3d)
@@ -48,13 +51,13 @@ This is an example of the CHANGELOG.md file that will be automatically generated
 
 - ✅ **Tests Passed:** 225/225 (100%)
 - ✅ **Build Status:** SUCCESS
-- ✅ **JAR Created:** calculator-2026.02.08.5.jar
+- ✅ **JAR Created:** calculator-1.1.0.jar
 
 ## Artifacts
 
 This release includes the following artifacts:
 
-1. **calculator-2026.02.08.5.jar** - Versioned calculator application
+1. **calculator-1.1.0.jar** - Versioned calculator application
 2. **calculator-latest.jar** - Latest build (always up-to-date)
 3. **CHANGELOG.md** - This changelog file
 
@@ -62,7 +65,7 @@ This release includes the following artifacts:
 
 Download the JAR file and run:
 ```bash
-java -jar calculator-2026.02.08.5.jar
+java -jar calculator-1.1.0.jar
 ```
 
 Or use the latest build:
