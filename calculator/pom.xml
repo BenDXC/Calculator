@@ -1,34 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" 
+    xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.junit.platform</groupId>
-  <artifactId>junit-platform-console-standalone</artifactId>
-  <version>1.7.0-M1</version>
-  <name>JUnit Platform Console Standalone</name>
-  <description>Module "junit-platform-console-standalone" of JUnit 5.</description>
-  <url>https://junit.org/junit5/</url>
+  <groupId>com.calculator</groupId>
+  <artifactId>calculator</artifactId>
+  <version>1.0.0</version>
+  <name>Calculator Application</name>
+  <description>A comprehensive calculator application with unit conversions and number system conversions</description>
+  <url>https://github.com/BenDXC/Calculator</url>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <junit.version>5.10.1</junit.version>
+  </properties>
+  
+  <dependencies>
+    <!-- JUnit 5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- Mockito for mocking -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.7.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.7.0</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- AssertJ for fluent assertions -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.24.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <!-- Maven Compiler Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <source>11</source>
+          <target>11</target>
+        </configuration>
+      </plugin>
+      
+      <!-- Maven Surefire Plugin for running tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.2</version>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+      
+      <!-- JaCoCo for code coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.11</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Maven JAR Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>calculator.src.main.java.com.calculator.run</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
   <licenses>
     <license>
       <name>Eclipse Public License v2.0</name>
       <url>https://www.eclipse.org/legal/epl-v20.html</url>
     </license>
   </licenses>
+  
   <scm>
-    <connection>scm:git:git://github.com/junit-team/junit5.git</connection>
-    <developerConnection>scm:git:git://github.com/junit-team/junit5.git</developerConnection>
-    <url>https://github.com/junit-team/junit5</url>
+    <connection>scm:git:github.com:BenDXC/Calculator.git</connection>
+    <developerConnection>scm:git:github.com:BenDXC/Calculator.git</developerConnection>
+    <url>https://github.com/BenDXC/Calculator</url>
   </scm>
-    <distributionManagement>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/OWNER/REPO</url> <!-- Replace OWNER and REPO with your GitHub repository details -->
-  </repository>
-</distributionManagement>
-
-<scm>
-  <connection>scm:git:github.com:OWNER/REPO.git</connection> <!-- Replace OWNER and REPO -->
-  <developerConnection>scm:git:github.com:OWNER/REPO.git</developerConnection>
-  <url>https://github.com/OWNER/REPO</url>
-</scm>
+  
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/BenDXC/Calculator</url>
+    </repository>
+  </distributionManagement>
 </project>
