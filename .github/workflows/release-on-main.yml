@@ -87,24 +87,47 @@ jobs:
           echo "version_number=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
           echo "Generated semantic version: $NEW_VERSION"
 
-      # Check if release already exists
+      # Check for duplicate release with comprehensive validation
       - name: Check for duplicate release
         id: check_release
         run: |
-          # Check if tag already exists
-          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  Release ${{ steps.version.outputs.version }} already exists"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "✅ Release ${{ steps.version.outputs.version }} is new"
+          # Fetch all tags from remote
+          git fetch --tags --force
+          
+          VERSION="${{ steps.version.outputs.version }}"
+          EXISTS=false
+          
+          # Check 1: Local tag existence
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "⚠️  Tag $VERSION exists locally"
+            EXISTS=true
           fi
           
-          # Also check remote tags
-          git fetch --tags
-          if git tag -l | grep -q "^${{ steps.version.outputs.version }}$"; then
+          # Check 2: Remote tag existence
+          if git ls-remote --tags origin | grep -q "refs/tags/$VERSION$"; then
+            echo "⚠️  Tag $VERSION exists on remote"
+            EXISTS=true
+          fi
+          
+          # Check 3: GitHub Release existence via API
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "⚠️  Release $VERSION already exists on GitHub"
+            EXISTS=true
+          fi
+          
+          if [ "$EXISTS" = true ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  Tag ${{ steps.version.outputs.version }} exists remotely"
+            echo "::warning::Duplicate detected - Release $VERSION already exists. Skipping to prevent duplicates."
+            echo "## ⚠️ Duplicate Release Prevented" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** Already exists" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This release was skipped to prevent duplicate tags/releases." >> $GITHUB_STEP_SUMMARY
+            echo "No new artifacts were created." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Release $VERSION is new - proceeding with creation"
           fi
 
       # Skip release if it already exists
