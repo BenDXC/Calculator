@@ -127,14 +127,50 @@ git push origin v1.0.0
 5. Click **"Run workflow"**
 
 ### Changelog Generation
-The workflow automatically generates a changelog by comparing commits between the current tag and the previous tag:
+The workflow automatically generates a comprehensive CHANGELOG.md file that is included as a downloadable asset in each release.
 
+#### CHANGELOG.md Structure:
 ```markdown
-## Changes since v1.0.0
-- Add new feature (John Doe)
-- Fix bug in calculation (Jane Smith)
-- Update documentation (Alice Brown)
+# CHANGELOG - Release v2026.02.08-build.5
+
+## Release Information
+- Version, build number, date, commit SHA
+
+## Changes Since Previous Release
+
+### Features
+- feat: commits listed here (author, hash)
+
+### Bug Fixes
+- fix: commits listed here (author, hash)
+
+### Documentation
+- docs: commits listed here (author, hash)
+
+### Other Changes
+- All other commits (refactor, test, style, etc.)
+
+### Full Commit History
+- Complete list of all commits
+
+## Test Results
+- Tests passed: 225/225 (100%)
+- Build status: SUCCESS
+
+## Artifacts
+- List of all downloadable files
+
+## How to Use
+- Download and usage instructions
 ```
+
+#### Benefits:
+- ✅ Organized by commit type (uses conventional commits)
+- ✅ Includes author names and commit hashes
+- ✅ Downloadable markdown file
+- ✅ Test results and build status
+- ✅ Usage instructions included
+- ✅ Professional, comprehensive format
 
 ---
 
@@ -203,11 +239,24 @@ Perfect for:
 
 ### Release Artifacts
 Each release includes:
+- **CHANGELOG.md**: Comprehensive changelog file (downloadable markdown)
+  - Organized by commit type (Features, Fixes, Docs, etc.)
+  - Full commit history with authors and commit hashes
+  - Test results and build status
+  - Usage instructions
 - **Versioned JAR**: `calculator-{YYYY.MM.DD.BUILD}.jar`
 - **Latest JAR**: `calculator-latest.jar` (always points to newest build)
-- **Changelog**: All commits since last release
+- **Release Notes**: Summary in GitHub release page
 - **Test Results**: Confirmation that all 225 tests passed
 - **Build Metadata**: Commit SHA, build date, build number
+
+### Duplicate Release Prevention
+The workflow automatically checks if a release already exists:
+- ✅ Checks if tag exists locally and remotely
+- ✅ Skips release creation if duplicate detected
+- ✅ Shows warning in workflow summary
+- ✅ Prevents accidental duplicate releases
+- ✅ No errors thrown, graceful handling
 
 ---
 
@@ -337,6 +386,9 @@ wget https://github.com/{owner}/{repo}/releases/latest/download/calculator-lates
 
 # Get specific version
 wget https://github.com/{owner}/{repo}/releases/download/v2026.02.08-build.5/calculator-2026.02.08.5.jar
+
+# Download the changelog
+wget https://github.com/{owner}/{repo}/releases/latest/download/CHANGELOG.md
 ```
 
 ---
