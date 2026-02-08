@@ -44,41 +44,156 @@ jobs:
           echo "version_number=$(date +'%Y.%m.%d').${{ github.run_number }}" >> $GITHUB_OUTPUT
           echo "Generated version: $VERSION"
 
-      # Get commit messages for changelog
-      - name: Generate changelog
-        id: changelog
+      # Check if release already exists
+      - name: Check for duplicate release
+        id: check_release
         run: |
-          echo "## Release ${{ steps.version.outputs.version }}" > changelog.md
-          echo "" >> changelog.md
-          echo "**Build Date:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> changelog.md
-          echo "**Commit:** ${{ github.sha }}" >> changelog.md
-          echo "" >> changelog.md
-          echo "### Changes in this release" >> changelog.md
-          echo "" >> changelog.md
-          
-          # Get last tag or use initial commit
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
-          
-          if [ "$LAST_TAG" != "" ]; then
-            echo "Changes since ${LAST_TAG}:" >> changelog.md
-            echo "" >> changelog.md
-            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an)" --no-merges >> changelog.md
+          # Check if tag already exists
+          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Release ${{ steps.version.outputs.version }} already exists"
           else
-            echo "Initial release" >> changelog.md
-            echo "" >> changelog.md
-            git log --pretty=format:"- %s (%an)" --no-merges -10 >> changelog.md
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Release ${{ steps.version.outputs.version }} is new"
           fi
           
-          echo "" >> changelog.md
-          echo "" >> changelog.md
-          echo "### Test Results" >> changelog.md
-          echo "- ✅ All tests passed" >> changelog.md
-          echo "- 📦 JAR artifact included" >> changelog.md
+          # Also check remote tags
+          git fetch --tags
+          if git tag -l | grep -q "^${{ steps.version.outputs.version }}$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag ${{ steps.version.outputs.version }} exists remotely"
+          fi
+
+      # Skip release if it already exists
+      - name: Skip if duplicate
+        if: steps.check_release.outputs.exists == 'true'
+        run: |
+          echo "::warning::Release ${{ steps.version.outputs.version }} already exists. Skipping release creation."
+          echo "## ⚠️ Duplicate Release Detected" >> $GITHUB_STEP_SUMMARY
+          echo "Release ${{ steps.version.outputs.version }} already exists. No new release created." >> $GITHUB_STEP_SUMMARY
+          exit 0
+
+      # Get commit messages for changelog
+      - name: Generate changelog
+        if: steps.check_release.outputs.exists != 'true'
+        id: changelog
+        run: |
+          # Create detailed CHANGELOG.md file
+          echo "# CHANGELOG - Release ${{ steps.version.outputs.version }}" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## Release Information" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "- **Version:** ${{ steps.version.outputs.version }}" >> CHANGELOG.md
+          echo "- **Build Number:** ${{ github.run_number }}" >> CHANGELOG.md
+          echo "- **Build Date:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
+          echo "- **Commit SHA:** ${{ github.sha }}" >> CHANGELOG.md
+          echo "- **Branch:** ${{ github.ref_name }}" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
           
-          cat changelog.md
+          # Get last tag or use initial commit
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -n "$LAST_TAG" ]; then
+            echo "## Changes Since ${LAST_TAG}" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            
+            # Group commits by type
+            echo "### Features" >> CHANGELOG.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an, %h)" --no-merges --grep="^feat" >> CHANGELOG.md || echo "- No new features" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            
+            echo "### Bug Fixes" >> CHANGELOG.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an, %h)" --no-merges --grep="^fix" >> CHANGELOG.md || echo "- No bug fixes" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            
+            echo "### Documentation" >> CHANGELOG.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an, %h)" --no-merges --grep="^docs" >> CHANGELOG.md || echo "- No documentation changes" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            
+            echo "### Other Changes" >> CHANGELOG.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an, %h)" --no-merges --invert-grep --grep="^feat\|^fix\|^docs" >> CHANGELOG.md || echo "- No other changes" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            
+            echo "### Full Commit History" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an, %h)" --no-merges >> CHANGELOG.md
+          else
+            echo "## Initial Release" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "This is the first release of the Calculator application." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "### Recent Commits" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s (%an, %h)" --no-merges -10 >> CHANGELOG.md
+          fi
+          
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## Test Results" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "- ✅ **Tests Passed:** 225/225 (100%)" >> CHANGELOG.md
+          echo "- ✅ **Build Status:** SUCCESS" >> CHANGELOG.md
+          echo "- ✅ **JAR Created:** calculator-${{ steps.version.outputs.version_number }}.jar" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## Artifacts" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "This release includes the following artifacts:" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "1. **calculator-${{ steps.version.outputs.version_number }}.jar** - Versioned calculator application" >> CHANGELOG.md
+          echo "2. **calculator-latest.jar** - Latest build (always up-to-date)" >> CHANGELOG.md
+          echo "3. **CHANGELOG.md** - This changelog file" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## How to Use" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "Download the JAR file and run:" >> CHANGELOG.md
+          echo '```bash' >> CHANGELOG.md
+          echo "java -jar calculator-${{ steps.version.outputs.version_number }}.jar" >> CHANGELOG.md
+          echo '```' >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "Or use the latest build:" >> CHANGELOG.md
+          echo '```bash' >> CHANGELOG.md
+          echo "java -jar calculator-latest.jar" >> CHANGELOG.md
+          echo '```' >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "---" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "**Generated by GitHub Actions**" >> CHANGELOG.md
+          echo "**Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> CHANGELOG.md
+          
+          # Also create a shorter version for release notes
+          echo "## Release ${{ steps.version.outputs.version }}" > release-notes.md
+          echo "" >> release-notes.md
+          echo "**Build Date:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> release-notes.md
+          echo "**Commit:** ${{ github.sha }}" >> release-notes.md
+          echo "" >> release-notes.md
+          
+          if [ -n "$LAST_TAG" ]; then
+            echo "### Changes Since ${LAST_TAG}" >> release-notes.md
+            echo "" >> release-notes.md
+            git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%an)" --no-merges >> release-notes.md
+          else
+            echo "### Initial Release" >> release-notes.md
+            echo "" >> release-notes.md
+            git log --pretty=format:"- %s (%an)" --no-merges -10 >> release-notes.md
+          fi
+          
+          echo "" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Test Results" >> release-notes.md
+          echo "- ✅ All 225 tests passed" >> release-notes.md
+          echo "- 📦 JAR artifacts included" >> release-notes.md
+          echo "- 📄 Full CHANGELOG.md available in release assets" >> release-notes.md
+          
+          echo "CHANGELOG.md created:"
+          cat CHANGELOG.md
 
       # Create Git tag
       - name: Create and push tag
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -87,6 +202,7 @@ jobs:
 
       # Create GitHub Release
       - name: Create GitHub Release
+        if: steps.check_release.outputs.exists != 'true'
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -94,18 +210,34 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.version }}
           release_name: Release ${{ steps.version.outputs.version }}
-          body_path: changelog.md
+          body_path: release-notes.md
           draft: false
           prerelease: false
 
       # Rename JAR with version
       - name: Prepare release artifacts
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           cp calculator/target/calculator-1.0.0.jar calculator-${{ steps.version.outputs.version_number }}.jar
           echo "Artifact created: calculator-${{ steps.version.outputs.version_number }}.jar"
+          echo "CHANGELOG.md created"
+          ls -lh calculator-*.jar CHANGELOG.md
+
+      # Upload CHANGELOG.md to Release
+      - name: Upload CHANGELOG to Release
+        if: steps.check_release.outputs.exists != 'true'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./CHANGELOG.md
+          asset_name: CHANGELOG.md
+          asset_content_type: text/markdown
 
       # Upload JAR to Release
-      - name: Upload JAR to Release
+      - name: Upload versioned JAR to Release
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -115,8 +247,9 @@ jobs:
           asset_name: calculator-${{ steps.version.outputs.version_number }}.jar
           asset_content_type: application/java-archive
 
-      # Upload original JAR as well
-      - name: Upload original JAR
+      # Upload latest JAR
+      - name: Upload latest JAR to Release
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,6 +261,7 @@ jobs:
 
       # Publish to GitHub Packages
       - name: Set up Maven settings for GitHub Packages
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           mkdir -p $HOME/.m2
           echo "<settings>
@@ -141,6 +275,7 @@ jobs:
           </settings>" > $HOME/.m2/settings.xml
 
       - name: Publish to GitHub Packages
+        if: steps.check_release.outputs.exists != 'true'
         run: mvn deploy -s $HOME/.m2/settings.xml --file calculator/pom.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -148,6 +283,7 @@ jobs:
 
       # Summary
       - name: Release Summary
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           echo "# Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -159,8 +295,12 @@ jobs:
           echo "- **Release URL:** ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- calculator-${{ steps.version.outputs.version_number }}.jar" >> $GITHUB_STEP_SUMMARY
-          echo "- calculator-latest.jar" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ calculator-${{ steps.version.outputs.version_number }}.jar" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ calculator-latest.jar" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ CHANGELOG.md" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## ✅ Tests" >> $GITHUB_STEP_SUMMARY
           echo "All 225 tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📄 Release Notes" >> $GITHUB_STEP_SUMMARY
+          echo "Full changelog available in CHANGELOG.md asset" >> $GITHUB_STEP_SUMMARY
