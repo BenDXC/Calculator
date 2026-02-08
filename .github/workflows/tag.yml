@@ -1,0 +1,61 @@
+name: Create Version Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+      message:
+        description: 'Tag message (optional)'
+        required: false
+        type: string
+        default: 'Release version'
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper tagging
+
+      # Validate version format
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in format v1.0.0"
+            exit 1
+          fi
+
+      # Check if tag already exists
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "${{ github.event.inputs.version }}" >/dev/null 2>&1; then
+            echo "Error: Tag ${{ github.event.inputs.version }} already exists"
+            exit 1
+          fi
+
+      # Configure git
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Create and push tag
+      - name: Create and push tag
+        run: |
+          git tag -a "${{ github.event.inputs.version }}" -m "${{ github.event.inputs.message }}: ${{ github.event.inputs.version }}"
+          git push origin "${{ github.event.inputs.version }}"
+          
+      # Output success message
+      - name: Tag created successfully
+        run: |
+          echo "✅ Tag ${{ github.event.inputs.version }} has been created and pushed"
+          echo "Tag URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
