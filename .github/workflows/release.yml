@@ -40,8 +40,49 @@ jobs:
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+      # Check for duplicate release with comprehensive validation
+      - name: Check for duplicate release
+        id: check_release
+        run: |
+          # Fetch all tags from remote
+          git fetch --tags --force
+          
+          TAG="${{ steps.tag.outputs.tag }}"
+          EXISTS=false
+          
+          # Check 1: GitHub Release existence via API
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "⚠️  Release $TAG already exists on GitHub"
+            EXISTS=true
+          fi
+          
+          # Check 2: Tag should exist (since we're creating release from tag)
+          # but we check if release was already created for this tag
+          RELEASE_COUNT=$(gh release list | grep -c "^$TAG" || echo "0")
+          if [ "$RELEASE_COUNT" -gt "0" ]; then
+            echo "⚠️  Release already exists for tag $TAG"
+            EXISTS=true
+          fi
+          
+          if [ "$EXISTS" = true ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::warning::Duplicate detected - Release $TAG already exists. Skipping to prevent duplicates."
+            echo "## ⚠️ Duplicate Release Prevented" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Tag:** $TAG" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** Release already exists" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This release was skipped to prevent duplicate releases." >> $GITHUB_STEP_SUMMARY
+            echo "The tag exists, but a release has already been created for it." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ No release exists for tag $TAG - proceeding with creation"
+          fi
+
       # Set up JDK 11
       - name: Set up JDK 11
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/setup-java@v4
         with:
           java-version: '11'
@@ -50,14 +91,17 @@ jobs:
 
       # Build with Maven
       - name: Build with Maven
+        if: steps.check_release.outputs.exists != 'true'
         run: mvn -B clean package --file calculator/pom.xml
 
       # Run tests
       - name: Run tests
+        if: steps.check_release.outputs.exists != 'true'
         run: mvn -B test --file calculator/pom.xml
 
       # Get version from tag
       - name: Get version
+        if: steps.check_release.outputs.exists != 'true'
         id: version
         run: |
           VERSION=${{ steps.tag.outputs.tag }}
@@ -66,6 +110,7 @@ jobs:
 
       # Generate changelog
       - name: Generate changelog
+        if: steps.check_release.outputs.exists != 'true'
         id: changelog
         run: |
           # Get previous tag
@@ -171,6 +216,7 @@ jobs:
 
       # Create GitHub Release
       - name: Create GitHub Release
+        if: steps.check_release.outputs.exists != 'true'
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -184,6 +230,7 @@ jobs:
 
       # Upload CHANGELOG.md to Release
       - name: Upload CHANGELOG to Release
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -195,6 +242,7 @@ jobs:
 
       # Find and upload JAR file
       - name: Upload JAR to Release
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -206,6 +254,7 @@ jobs:
 
       # Optional: Publish to GitHub Packages
       - name: Set up Maven settings for GitHub Packages
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           mkdir -p $HOME/.m2
           echo "<settings>
@@ -219,6 +268,7 @@ jobs:
           </settings>" > $HOME/.m2/settings.xml
 
       - name: Publish to GitHub Packages
+        if: steps.check_release.outputs.exists != 'true'
         run: mvn deploy -s $HOME/.m2/settings.xml --file calculator/pom.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -226,6 +276,12 @@ jobs:
 
       # Output release information
       - name: Release created successfully
+        if: steps.check_release.outputs.exists != 'true'
         run: |
           echo "✅ Release ${{ steps.tag.outputs.tag }} has been created"
           echo "Release URL: ${{ steps.create_release.outputs.html_url }}"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Release Created Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Release URL:** ${{ steps.create_release.outputs.html_url }}" >> $GITHUB_STEP_SUMMARY
