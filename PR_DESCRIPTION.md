@@ -30,7 +30,11 @@ This PR adds complete CI/CD automation, comprehensive testing, and release manag
 
 #### **Release on Main Push** (`release-on-main.yml`) ⭐ NEW
 - ✅ **Automatic** release on every main push
-- ✅ Auto-generates version (v{YYYY.MM.DD}-build.{N})
+- ✅ **Semantic versioning** (v1.0.0, v1.1.0, v2.0.0)
+- ✅ **Auto-determines version bump** based on commits:
+  - `feat!:` or `BREAKING CHANGE:` → MAJOR (v1.0.0 → v2.0.0)
+  - `feat:` → MINOR (v1.0.0 → v1.1.0)
+  - `fix:`, `docs:`, etc. → PATCH (v1.0.0 → v1.0.1)
 - ✅ **Prevents duplicate releases**
 - ✅ **Generates comprehensive CHANGELOG.md**
 - ✅ Uploads 3 files: CHANGELOG.md, versioned JAR, latest JAR
@@ -130,10 +134,14 @@ Each release includes a comprehensive CHANGELOG.md with:
 
 ## 🎯 Key Benefits
 
-### Automatic Releases
+### Automatic Releases with Semantic Versioning
 ✅ Every merge to main creates a release automatically
 ✅ No manual steps required
-✅ Version auto-generated: v{YYYY.MM.DD}-build.{N}
+✅ **Semantic versioning**: vMAJOR.MINOR.PATCH
+✅ **Automatic version bumping**:
+  - Breaking changes → MAJOR bump (v1.0.0 → v2.0.0)
+  - New features → MINOR bump (v1.0.0 → v1.1.0)
+  - Bug fixes → PATCH bump (v1.0.0 → v1.0.1)
 
 ### Professional Changelogs
 ✅ CHANGELOG.md included in every release
@@ -157,12 +165,15 @@ Once this PR is merged to main:
 
 1. **Build workflow** validates the merge
 2. **Release workflow** automatically triggers
-3. **First release created**: `v{today's date}-build.1`
-4. **Release includes**:
+3. **Version determined** automatically based on commits
+4. **First release created**: `v1.0.0` (initial release)
+5. **Release includes**:
    - CHANGELOG.md (with all commits from this PR)
-   - calculator-{version}.jar
+   - calculator-1.0.0.jar
    - calculator-latest.jar
-5. **GitHub release** published automatically
+6. **GitHub release** published automatically
+
+**Future releases** will auto-increment (v1.0.1, v1.1.0, v2.0.0, etc.)
 
 **Total time**: ~2-3 minutes from merge to release
 
