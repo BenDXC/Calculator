@@ -19,9 +19,15 @@ public class ConversionDialogTest {
     class ConstructorTest {
 
         @Test
-        @DisplayName("Should be able to instantiate ConversionDialog")
-        void testConstructor() {
-            assertThatCode(() -> new ConversionDialog()).doesNotThrowAnyException();
+        @DisplayName("Should prevent instantiation of utility class")
+        void testConstructor() throws Exception {
+            // Utility class should not be instantiable
+            var constructor = ConversionDialog.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            assertThatThrownBy(() -> constructor.newInstance())
+                .isInstanceOf(java.lang.reflect.InvocationTargetException.class)
+                .hasCauseInstanceOf(UnsupportedOperationException.class)
+                .hasRootCauseMessage("Utility class cannot be instantiated");
         }
     }
 
