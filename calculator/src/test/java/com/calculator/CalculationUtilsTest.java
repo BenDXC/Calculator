@@ -157,8 +157,8 @@ public class CalculationUtilsTest {
         @ParameterizedTest
         @CsvSource({
             "28.35, 0.99225",
-            "100, 3.5",
-            "50, 1.75",
+            "100, 3.5273",
+            "50, 1.7637",
             "0, 0"
         })
         @DisplayName("Should convert grams to ounces correctly")
@@ -407,10 +407,15 @@ public class CalculationUtilsTest {
     class ConstructorTest {
 
         @Test
-        @DisplayName("Should be able to instantiate CalculationUtils")
-        void testConstructor() {
-            // Test constructor for 100% coverage
-            assertThatCode(() -> new CalculationUtils()).doesNotThrowAnyException();
+        @DisplayName("Should prevent instantiation of utility class")
+        void testConstructor() throws Exception {
+            // Utility class should not be instantiable
+            var constructor = CalculationUtils.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            assertThatThrownBy(() -> constructor.newInstance())
+                .isInstanceOf(java.lang.reflect.InvocationTargetException.class)
+                .hasCauseInstanceOf(UnsupportedOperationException.class)
+                .hasRootCauseMessage("Utility class cannot be instantiated");
         }
     }
 

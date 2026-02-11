@@ -5,8 +5,21 @@ import javax.swing.JOptionPane;
 /**
  * Utility class for validating user input in dialog boxes.
  * Consolidates validation logic to avoid code duplication.
+ * 
+ * <p>This class cannot be instantiated as it contains only static utility methods.</p>
  */
-public class InputValidator {
+public final class InputValidator {
+
+    // Dialog titles
+    private static final String INVALID_INPUT_TITLE = "Invalid Input";
+    private static final String INVALID_RANGE_TITLE = "Invalid Range";
+    
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private InputValidator() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * Prompts user for numeric input and validates it.
@@ -24,7 +37,7 @@ public class InputValidator {
         if (!CalculationUtils.isNumeric(input)) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter only numbers", 
-                "Invalid Input", 
+                INVALID_INPUT_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
             return getValidNumericInput(message);
         }
@@ -46,7 +59,7 @@ public class InputValidator {
         if (!CalculationUtils.isBinary(input)) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter only 0 or 1", 
-                "Invalid Input", 
+                INVALID_INPUT_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
             return getValidBinaryInput(message);
         }
@@ -68,7 +81,7 @@ public class InputValidator {
         if (!CalculationUtils.isHexadecimal(input)) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter valid hexadecimal characters (0-9, A-F)", 
-                "Invalid Input", 
+                INVALID_INPUT_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
             return getValidHexInput(message);
         }
@@ -94,7 +107,7 @@ public class InputValidator {
             if (value < min || value > max) {
                 JOptionPane.showMessageDialog(null, 
                     String.format("Please enter a number between %d and %d", min, max), 
-                    "Invalid Range", 
+                    INVALID_RANGE_TITLE, 
                     JOptionPane.ERROR_MESSAGE);
                 return getValidIntegerInRange(message, min, max);
             }
@@ -102,7 +115,7 @@ public class InputValidator {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter a valid integer", 
-                "Invalid Input", 
+                INVALID_INPUT_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
             return getValidIntegerInRange(message, min, max);
         }
