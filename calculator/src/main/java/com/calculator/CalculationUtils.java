@@ -1,4 +1,4 @@
-package calculator.src.main.java.com.calculator;
+package com.calculator;
 
 /**
  * Utility class containing pure calculation logic separated from UI.
