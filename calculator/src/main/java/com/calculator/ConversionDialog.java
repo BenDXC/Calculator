@@ -172,20 +172,18 @@ public final class ConversionDialog {
         
         try {
             int decimal = Integer.parseInt(input);
-            if (decimal < 0) {
-                JOptionPane.showMessageDialog(null, 
-                    "Please enter a non-negative integer", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
             String binary = CalculationUtils.decimalToBinary(decimal);
             JOptionPane.showMessageDialog(null, 
                 String.format("Decimal %d = Binary %s", decimal, binary));
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter a valid integer", 
-                "Error", 
+                ERROR_TITLE, 
+                JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(null, 
+                e.getMessage(), 
+                ERROR_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -210,7 +208,7 @@ public final class ConversionDialog {
     }
 
     /**
-     * Shows dialog for decimal to hexadecimal conversion
+     * Shows dialog for decimal to hexadecimal conversion.
      */
     public static void showDecimalToHexadecimal() {
         String input = InputValidator.getValidNumericInput("Enter a decimal number:");
@@ -218,19 +216,17 @@ public final class ConversionDialog {
         
         try {
             int decimal = Integer.parseInt(input);
-            if (decimal < 0) {
-                JOptionPane.showMessageDialog(null, 
-                    "Please enter a non-negative integer", 
-                    ERROR_TITLE, 
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
             String hex = CalculationUtils.decimalToHexadecimal(decimal);
             JOptionPane.showMessageDialog(null, 
                 String.format("Decimal %d = Hexadecimal %s", decimal, hex));
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter a valid integer", 
+                ERROR_TITLE, 
+                JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(null, 
+                e.getMessage(), 
                 ERROR_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
         }
