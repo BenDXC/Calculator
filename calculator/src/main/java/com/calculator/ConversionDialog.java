@@ -5,8 +5,24 @@ import javax.swing.JOptionPane;
 /**
  * Handles advanced calculation dialogs and conversion operations.
  * Separated from UI to improve modularity and testability.
+ * 
+ * <p>This class cannot be instantiated as it contains only static utility methods.</p>
  */
-public class ConversionDialog {
+public final class ConversionDialog {
+
+    // Root type constants
+    private static final double SQUARE_ROOT_INDEX = 2.0;
+    private static final double CUBE_ROOT_INDEX = 3.0;
+    
+    // Dialog titles
+    private static final String ERROR_TITLE = "Error";
+    
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private ConversionDialog() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * Shows dialog for power, root, and modulo calculations
@@ -41,14 +57,14 @@ public class ConversionDialog {
                 break;
             case 'r':
             case 'R':
-                if (num2 == 2.0) {
+                if (num2 == SQUARE_ROOT_INDEX) {
                     result = CalculationUtils.calculateSquareRoot(num1);
-                } else if (num2 == 3.0) {
+                } else if (num2 == CUBE_ROOT_INDEX) {
                     result = CalculationUtils.calculateCubeRoot(num1);
                 } else {
                     JOptionPane.showMessageDialog(null, 
                         "For root operation, please enter 2 (square root) or 3 (cube root)", 
-                        "Error", 
+                        ERROR_TITLE, 
                         JOptionPane.ERROR_MESSAGE);
                     showComplexCalculations();
                     return;
@@ -57,7 +73,7 @@ public class ConversionDialog {
             default:
                 JOptionPane.showMessageDialog(null, 
                     "Invalid operator. Please enter 'p', 'r', or '%'", 
-                    "Error", 
+                    ERROR_TITLE, 
                     JOptionPane.ERROR_MESSAGE);
                 showComplexCalculations();
                 return;
@@ -188,7 +204,7 @@ public class ConversionDialog {
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(null, 
                 "Invalid binary number: " + e.getMessage(), 
-                "Error", 
+                ERROR_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -205,7 +221,7 @@ public class ConversionDialog {
             if (decimal < 0) {
                 JOptionPane.showMessageDialog(null, 
                     "Please enter a non-negative integer", 
-                    "Error", 
+                    ERROR_TITLE, 
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -215,7 +231,7 @@ public class ConversionDialog {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, 
                 "Please enter a valid integer", 
-                "Error", 
+                ERROR_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -234,7 +250,7 @@ public class ConversionDialog {
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(null, 
                 "Invalid hexadecimal number: " + e.getMessage(), 
-                "Error", 
+                ERROR_TITLE, 
                 JOptionPane.ERROR_MESSAGE);
         }
     }

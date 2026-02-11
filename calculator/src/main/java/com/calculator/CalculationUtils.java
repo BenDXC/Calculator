@@ -3,8 +3,28 @@ package com.calculator;
 /**
  * Utility class containing pure calculation logic separated from UI.
  * This allows for easier unit testing of calculation functionality.
+ * 
+ * <p>This class cannot be instantiated as it contains only static utility methods.</p>
  */
-public class CalculationUtils {
+public final class CalculationUtils {
+
+    // Conversion constants
+    private static final double FAHRENHEIT_OFFSET = 32.0;
+    private static final double FAHRENHEIT_RATIO = 5.0 / 9.0;
+    private static final double CELSIUS_TO_FAHRENHEIT_RATIO = 9.0 / 5.0;
+    private static final double INCHES_TO_CM = 2.54;
+    private static final double CM_TO_INCHES = 1.0 / INCHES_TO_CM;
+    private static final double OUNCES_TO_GRAMS = 28.35;
+    private static final double GRAMS_TO_OUNCES = 1.0 / OUNCES_TO_GRAMS;
+    private static final int BINARY_BASE = 2;
+    private static final int HEX_BASE = 16;
+    
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private CalculationUtils() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
     /**
      * Calculate power of a number
@@ -50,7 +70,7 @@ public class CalculationUtils {
      * @return Temperature in Celsius
      */
     public static double fahrenheitToCelsius(double fahrenheit) {
-        return (fahrenheit - 32) * 0.5556;
+        return (fahrenheit - FAHRENHEIT_OFFSET) * FAHRENHEIT_RATIO;
     }
 
     /**
@@ -59,7 +79,7 @@ public class CalculationUtils {
      * @return Temperature in Fahrenheit
      */
     public static double celsiusToFahrenheit(double celsius) {
-        return (celsius * 9.0 / 5.0) + 32;
+        return (celsius * CELSIUS_TO_FAHRENHEIT_RATIO) + FAHRENHEIT_OFFSET;
     }
 
     /**
@@ -68,7 +88,7 @@ public class CalculationUtils {
      * @return Length in centimeters
      */
     public static double inchesToCentimeters(double inches) {
-        return inches * 2.54;
+        return inches * INCHES_TO_CM;
     }
 
     /**
@@ -77,7 +97,7 @@ public class CalculationUtils {
      * @return Length in inches
      */
     public static double centimetersToInches(double centimeters) {
-        return centimeters * 0.3937;
+        return centimeters * CM_TO_INCHES;
     }
 
     /**
@@ -86,7 +106,7 @@ public class CalculationUtils {
      * @return Mass in grams
      */
     public static double ouncesToGrams(double ounces) {
-        return ounces * 28.35;
+        return ounces * OUNCES_TO_GRAMS;
     }
 
     /**
@@ -95,7 +115,7 @@ public class CalculationUtils {
      * @return Mass in ounces
      */
     public static double gramsToOunces(double grams) {
-        return grams * 0.035;
+        return grams * GRAMS_TO_OUNCES;
     }
 
     /**
@@ -112,8 +132,8 @@ public class CalculationUtils {
         int num = decimal;
         
         while (num != 0) {
-            binary.insert(0, num % 2);
-            num = num / 2;
+            binary.insert(0, num % BINARY_BASE);
+            num = num / BINARY_BASE;
         }
         
         return binary.toString();
@@ -136,7 +156,7 @@ public class CalculationUtils {
         
         while (binaryNum != 0) {
             int temp = binaryNum % 10;
-            decimal += temp * Math.pow(2, power);
+            decimal += temp * Math.pow(BINARY_BASE, power);
             binaryNum = binaryNum / 10;
             power++;
         }
@@ -159,9 +179,9 @@ public class CalculationUtils {
         int number = decimal;
         
         while (number > 0) {
-            int remainder = number % 16;
+            int remainder = number % HEX_BASE;
             result.insert(0, hex[remainder]);
-            number = number / 16;
+            number = number / HEX_BASE;
         }
         
         return result.toString();
@@ -185,7 +205,7 @@ public class CalculationUtils {
         for (int i = 0; i < hexUpper.length(); i++) {
             char c = hexUpper.charAt(i);
             int d = digits.indexOf(c);
-            val = 16 * val + d;
+            val = HEX_BASE * val + d;
         }
         
         return val;

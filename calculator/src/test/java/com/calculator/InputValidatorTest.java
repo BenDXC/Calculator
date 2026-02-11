@@ -67,10 +67,15 @@ public class InputValidatorTest {
     class ConstructorTest {
 
         @Test
-        @DisplayName("Should be able to instantiate InputValidator")
-        void testConstructor() {
-            // Verify the class can be instantiated (though it's meant to be used statically)
-            assertThatCode(() -> new InputValidator()).doesNotThrowAnyException();
+        @DisplayName("Should prevent instantiation of utility class")
+        void testConstructor() throws Exception {
+            // Utility class should not be instantiable
+            var constructor = InputValidator.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            assertThatThrownBy(() -> constructor.newInstance())
+                .isInstanceOf(java.lang.reflect.InvocationTargetException.class)
+                .hasCauseInstanceOf(UnsupportedOperationException.class)
+                .hasRootCauseMessage("Utility class cannot be instantiated");
         }
     }
 }
