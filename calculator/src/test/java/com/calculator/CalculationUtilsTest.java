@@ -403,6 +403,18 @@ public class CalculationUtilsTest {
     }
 
     @Nested
+    @DisplayName("Constructor Test")
+    class ConstructorTest {
+
+        @Test
+        @DisplayName("Should be able to instantiate CalculationUtils")
+        void testConstructor() {
+            // Test constructor for 100% coverage
+            assertThatCode(() -> new CalculationUtils()).doesNotThrowAnyException();
+        }
+    }
+
+    @Nested
     @DisplayName("Edge Cases and Boundary Tests")
     class EdgeCaseTests {
 
