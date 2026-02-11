@@ -237,6 +237,11 @@ public class ValidationTest {
                 CalculationUtils.binaryToDecimal("102")
             ).isInstanceOf(IllegalArgumentException.class)
              .hasMessageContaining("only 0s and 1s");
+            
+            assertThatThrownBy(() -> 
+                CalculationUtils.binaryToDecimal(null)
+            ).isInstanceOf(IllegalArgumentException.class)
+             .hasMessageContaining("cannot be null");
         }
 
         @Test
@@ -246,6 +251,11 @@ public class ValidationTest {
                 CalculationUtils.hexadecimalToDecimal("XYZ")
             ).isInstanceOf(IllegalArgumentException.class)
              .hasMessageContaining("valid hexadecimal");
+            
+            assertThatThrownBy(() -> 
+                CalculationUtils.hexadecimalToDecimal(null)
+            ).isInstanceOf(IllegalArgumentException.class)
+             .hasMessageContaining("cannot be null");
         }
 
         @Test
@@ -264,6 +274,29 @@ public class ValidationTest {
                 CalculationUtils.performOperation(10, 5, "invalid")
             ).isInstanceOf(IllegalArgumentException.class)
              .hasMessageContaining("Invalid operation");
+            
+            assertThatThrownBy(() -> 
+                CalculationUtils.performOperation(10, 5, null)
+            ).isInstanceOf(IllegalArgumentException.class)
+             .hasMessageContaining("Operation cannot be null");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for modulo by zero")
+        void testModuloByZeroException() {
+            assertThatThrownBy(() -> 
+                CalculationUtils.calculateModulo(10, 0)
+            ).isInstanceOf(ArithmeticException.class)
+             .hasMessageContaining("Modulo by zero");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for square root of negative")
+        void testSquareRootNegativeException() {
+            assertThatThrownBy(() -> 
+                CalculationUtils.calculateSquareRoot(-4)
+            ).isInstanceOf(IllegalArgumentException.class)
+             .hasMessageContaining("Cannot calculate square root of negative number");
         }
     }
 
