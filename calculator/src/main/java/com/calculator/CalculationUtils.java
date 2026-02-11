@@ -1,10 +1,15 @@
 package com.calculator;
 
+import java.util.regex.Pattern;
+
 /**
  * Utility class containing pure calculation logic separated from UI.
  * This allows for easier unit testing of calculation functionality.
  * 
+ * <p>This class is thread-safe as all methods are stateless.</p>
  * <p>This class cannot be instantiated as it contains only static utility methods.</p>
+ * 
+ * @since 1.0
  */
 public final class CalculationUtils {
 
@@ -19,6 +24,14 @@ public final class CalculationUtils {
     private static final int BINARY_BASE = 2;
     private static final int HEX_BASE = 16;
     
+    // Floating-point comparison threshold
+    private static final double EPSILON = 1e-10;
+    
+    // Compiled regex patterns for performance (avoid recompiling on every call)
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final Pattern BINARY_PATTERN = Pattern.compile("[01]+");
+    private static final Pattern HEX_PATTERN = Pattern.compile("[0-9A-Fa-f]+");
+    
     /**
      * Private constructor to prevent instantiation of utility class.
      */
@@ -27,36 +40,53 @@ public final class CalculationUtils {
     }
 
     /**
-     * Calculate power of a number
+     * Calculate power of a number.
+     * 
      * @param base The base number
      * @param exponent The exponent
      * @return base raised to the power of exponent
+     * @throws ArithmeticException if result overflows or is undefined (e.g., 0^negative)
      */
     public static double calculatePower(double base, double exponent) {
-        return Math.pow(base, exponent);
+        double result = Math.pow(base, exponent);
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            throw new ArithmeticException("Power calculation resulted in undefined or infinite value");
+        }
+        return result;
     }
 
     /**
-     * Calculate modulo of two numbers
+     * Calculate modulo of two numbers.
+     * 
      * @param num1 First number
-     * @param num2 Second number
+     * @param num2 Second number (divisor)
      * @return num1 modulo num2
+     * @throws ArithmeticException if num2 is zero
      */
     public static double calculateModulo(double num1, double num2) {
+        if (Math.abs(num2) < EPSILON) {
+            throw new ArithmeticException("Modulo by zero");
+        }
         return num1 % num2;
     }
 
     /**
-     * Calculate square root of a number
+     * Calculate square root of a number.
+     * 
      * @param number The number to find square root of
      * @return square root of the number
+     * @throws IllegalArgumentException if number is negative
      */
     public static double calculateSquareRoot(double number) {
+        if (number < 0) {
+            throw new IllegalArgumentException("Cannot calculate square root of negative number: " + number);
+        }
         return Math.sqrt(number);
     }
 
     /**
-     * Calculate cube root of a number
+     * Calculate cube root of a number.
+     * 
      * @param number The number to find cube root of
      * @return cube root of the number
      */
@@ -119,108 +149,104 @@ public final class CalculationUtils {
     }
 
     /**
-     * Convert decimal to binary
-     * @param decimal Decimal number
+     * Convert decimal to binary.
+     * 
+     * <p>Performance: O(log n) using built-in Integer.toBinaryString()
+     * instead of O(n²) with StringBuilder.insert(0, ...)</p>
+     * 
+     * @param decimal Decimal number (non-negative)
      * @return Binary representation as string
+     * @throws IllegalArgumentException if decimal is negative
      */
     public static String decimalToBinary(int decimal) {
-        if (decimal == 0) {
-            return "0";
+        if (decimal < 0) {
+            throw new IllegalArgumentException("Cannot convert negative number to binary: " + decimal);
         }
-        
-        StringBuilder binary = new StringBuilder();
-        int num = decimal;
-        
-        while (num != 0) {
-            binary.insert(0, num % BINARY_BASE);
-            num = num / BINARY_BASE;
-        }
-        
-        return binary.toString();
+        return Integer.toBinaryString(decimal);
     }
 
     /**
-     * Convert binary to decimal
-     * @param binary Binary number as string
+     * Convert binary to decimal.
+     * 
+     * <p>Performance: O(n) using built-in Integer.parseInt() with radix
+     * instead of custom implementation with Math.pow() calls.</p>
+     * 
+     * @param binary Binary number as string (must contain only 0s and 1s)
      * @return Decimal representation
-     * @throws IllegalArgumentException if input contains non-binary digits
+     * @throws IllegalArgumentException if input is null, empty, or contains non-binary digits
+     * @throws NumberFormatException if binary string represents number too large for int
      */
     public static int binaryToDecimal(String binary) {
-        if (!binary.matches("[01]+")) {
-            throw new IllegalArgumentException("Input must contain only 0s and 1s");
+        if (binary == null || binary.isEmpty()) {
+            throw new IllegalArgumentException("Binary string cannot be null or empty");
         }
-        
-        int decimal = 0;
-        int power = 0;
-        int binaryNum = Integer.parseInt(binary);
-        
-        while (binaryNum != 0) {
-            int temp = binaryNum % 10;
-            decimal += temp * Math.pow(BINARY_BASE, power);
-            binaryNum = binaryNum / 10;
-            power++;
+        if (!BINARY_PATTERN.matcher(binary).matches()) {
+            throw new IllegalArgumentException("Input must contain only 0s and 1s: " + binary);
         }
-        
-        return decimal;
+        try {
+            return Integer.parseInt(binary, BINARY_BASE);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Binary string too large to convert to int: " + binary);
+        }
     }
 
     /**
-     * Convert decimal to hexadecimal
-     * @param decimal Decimal number
-     * @return Hexadecimal representation as string
+     * Convert decimal to hexadecimal.
+     * 
+     * <p>Performance: O(log n) using built-in Integer.toHexString()
+     * instead of O(n²) with StringBuilder.insert(0, ...)</p>
+     * 
+     * @param decimal Decimal number (non-negative)
+     * @return Hexadecimal representation as uppercase string
+     * @throws IllegalArgumentException if decimal is negative
      */
     public static String decimalToHexadecimal(int decimal) {
-        if (decimal == 0) {
-            return "0";
+        if (decimal < 0) {
+            throw new IllegalArgumentException("Cannot convert negative number to hexadecimal: " + decimal);
         }
-        
-        StringBuilder result = new StringBuilder();
-        char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-        int number = decimal;
-        
-        while (number > 0) {
-            int remainder = number % HEX_BASE;
-            result.insert(0, hex[remainder]);
-            number = number / HEX_BASE;
-        }
-        
-        return result.toString();
+        return Integer.toHexString(decimal).toUpperCase();
     }
 
     /**
-     * Convert hexadecimal to decimal
-     * @param hex Hexadecimal string
+     * Convert hexadecimal to decimal.
+     * 
+     * <p>Performance: O(n) using built-in Integer.parseInt() with radix
+     * instead of custom string manipulation.</p>
+     * 
+     * @param hex Hexadecimal string (may contain 0-9, A-F, case-insensitive)
      * @return Decimal representation
-     * @throws IllegalArgumentException if input contains invalid hex characters
+     * @throws IllegalArgumentException if input is null, empty, or contains invalid hex characters
+     * @throws NumberFormatException if hex string represents number too large for int
      */
     public static int hexadecimalToDecimal(String hex) {
-        if (!hex.matches("[0-9A-Fa-f]+")) {
-            throw new IllegalArgumentException("Input must contain only valid hexadecimal characters (0-9, A-F)");
+        if (hex == null || hex.isEmpty()) {
+            throw new IllegalArgumentException("Hexadecimal string cannot be null or empty");
         }
-        
-        String digits = "0123456789ABCDEF";
-        String hexUpper = hex.toUpperCase();
-        int val = 0;
-        
-        for (int i = 0; i < hexUpper.length(); i++) {
-            char c = hexUpper.charAt(i);
-            int d = digits.indexOf(c);
-            val = HEX_BASE * val + d;
+        if (!HEX_PATTERN.matcher(hex).matches()) {
+            throw new IllegalArgumentException("Input must contain only valid hexadecimal characters (0-9, A-F): " + hex);
         }
-        
-        return val;
+        try {
+            return Integer.parseInt(hex, HEX_BASE);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Hexadecimal string too large to convert to int: " + hex);
+        }
     }
 
     /**
-     * Perform basic arithmetic operations
-     * @param num1 First number
-     * @param num2 Second number
-     * @param operation Operation (+, -, *, /, %)
+     * Perform basic arithmetic operations.
+     * 
+     * @param num1 First operand
+     * @param num2 Second operand
+     * @param operation Operation symbol (+, -, *, /, %)
      * @return Result of the operation
-     * @throws IllegalArgumentException if operation is invalid
-     * @throws ArithmeticException if division by zero
+     * @throws IllegalArgumentException if operation is null or invalid
+     * @throws ArithmeticException if division or modulo by zero
      */
     public static double performOperation(double num1, double num2, String operation) {
+        if (operation == null) {
+            throw new IllegalArgumentException("Operation cannot be null");
+        }
+        
         switch (operation) {
             case "+":
                 return num1 + num2;
@@ -229,11 +255,14 @@ public final class CalculationUtils {
             case "*":
                 return num1 * num2;
             case "/":
-                if (num2 == 0) {
+                if (Math.abs(num2) < EPSILON) {
                     throw new ArithmeticException("Division by zero");
                 }
                 return num1 / num2;
             case "%":
+                if (Math.abs(num2) < EPSILON) {
+                    throw new ArithmeticException("Modulo by zero");
+                }
                 return num1 % num2;
             default:
                 throw new IllegalArgumentException("Invalid operation: " + operation);
@@ -241,38 +270,47 @@ public final class CalculationUtils {
     }
 
     /**
-     * Validate if string contains only numeric characters
+     * Validate if string represents a valid numeric value.
+     * 
+     * <p>Performance: Uses pre-compiled Pattern to avoid regex compilation overhead.</p>
+     * 
      * @param input String to validate
-     * @return true if input is numeric, false otherwise
+     * @return true if input is a valid number (integer or decimal, may be negative), false otherwise
      */
     public static boolean isNumeric(String input) {
         if (input == null || input.isEmpty()) {
             return false;
         }
-        return input.matches("-?\\d+(\\.\\d+)?");
+        return NUMERIC_PATTERN.matcher(input).matches();
     }
 
     /**
-     * Validate if string contains only binary digits
+     * Validate if string contains only binary digits (0 and 1).
+     * 
+     * <p>Performance: Uses pre-compiled Pattern to avoid regex compilation overhead.</p>
+     * 
      * @param input String to validate
-     * @return true if input is binary, false otherwise
+     * @return true if input contains only 0s and 1s, false otherwise
      */
     public static boolean isBinary(String input) {
         if (input == null || input.isEmpty()) {
             return false;
         }
-        return input.matches("[01]+");
+        return BINARY_PATTERN.matcher(input).matches();
     }
 
     /**
-     * Validate if string contains only hexadecimal characters
+     * Validate if string contains only hexadecimal characters (0-9, A-F, case-insensitive).
+     * 
+     * <p>Performance: Uses pre-compiled Pattern to avoid regex compilation overhead.</p>
+     * 
      * @param input String to validate
-     * @return true if input is hexadecimal, false otherwise
+     * @return true if input contains only valid hex characters, false otherwise
      */
     public static boolean isHexadecimal(String input) {
         if (input == null || input.isEmpty()) {
             return false;
         }
-        return input.matches("[0-9A-Fa-f]+");
+        return HEX_PATTERN.matcher(input).matches();
     }
 }
