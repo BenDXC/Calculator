@@ -1,4 +1,4 @@
-import calculator.src.main.java.com.calculator.CalculationUtils;
+import com.calculator.CalculationUtils;
 
 public class VerifyCalculator {
     public static void main(String[] args) {
