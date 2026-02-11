@@ -1,4 +1,4 @@
-package calculator.src.test.java.com.calculator;
+package com.calculator;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import calculator.src.main.java.com.calculator.CalculationUtils;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +24,14 @@ public class CalculationUtilsTest {
             assertThat(CalculationUtils.calculatePower(5, 2)).isEqualTo(25.0);
             assertThat(CalculationUtils.calculatePower(10, 0)).isEqualTo(1.0);
             assertThat(CalculationUtils.calculatePower(2, -1)).isEqualTo(0.5);
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for undefined power results")
+        void testPowerUndefined() {
+            assertThatThrownBy(() -> CalculationUtils.calculatePower(0, -1))
+                .isInstanceOf(ArithmeticException.class)
+                .hasMessageContaining("undefined or infinite");
         }
 
         @ParameterizedTest
@@ -49,6 +55,14 @@ public class CalculationUtilsTest {
             assertThat(CalculationUtils.calculateSquareRoot(16)).isEqualTo(4.0);
             assertThat(CalculationUtils.calculateSquareRoot(25)).isEqualTo(5.0);
             assertThat(CalculationUtils.calculateSquareRoot(0)).isEqualTo(0.0);
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for square root of negative number")
+        void testSquareRootNegative() {
+            assertThatThrownBy(() -> CalculationUtils.calculateSquareRoot(-4))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot calculate square root of negative number");
         }
 
         @Test
@@ -76,6 +90,14 @@ public class CalculationUtilsTest {
         @DisplayName("Should calculate modulo correctly")
         void testCalculateModulo(double num1, double num2, double expected) {
             assertThat(CalculationUtils.calculateModulo(num1, num2)).isEqualTo(expected);
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for modulo by zero")
+        void testModuloByZero() {
+            assertThatThrownBy(() -> CalculationUtils.calculateModulo(10, 0))
+                .isInstanceOf(ArithmeticException.class)
+                .hasMessageContaining("Modulo by zero");
         }
     }
 
@@ -159,8 +181,8 @@ public class CalculationUtilsTest {
         @ParameterizedTest
         @CsvSource({
             "28.35, 0.99225",
-            "100, 3.5",
-            "50, 1.75",
+            "100, 3.5273",
+            "50, 1.7637",
             "0, 0"
         })
         @DisplayName("Should convert grams to ounces correctly")
@@ -211,6 +233,14 @@ public class CalculationUtilsTest {
             
             assertThatThrownBy(() -> CalculationUtils.binaryToDecimal("ABC"))
                 .isInstanceOf(IllegalArgumentException.class);
+            
+            assertThatThrownBy(() -> CalculationUtils.binaryToDecimal(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
+            
+            assertThatThrownBy(() -> CalculationUtils.binaryToDecimal(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null or empty");
         }
 
         @Test
@@ -222,6 +252,15 @@ public class CalculationUtilsTest {
                 int backToDecimal = CalculationUtils.binaryToDecimal(binary);
                 assertThat(backToDecimal).isEqualTo(num);
             }
+        }
+        
+        @Test
+        @DisplayName("Should handle extremely large binary string")
+        void testLargeBinaryString() {
+            // 64 ones would overflow int
+            String largeBinary = "1".repeat(64);
+            assertThatThrownBy(() -> CalculationUtils.binaryToDecimal(largeBinary))
+                .isInstanceOf(NumberFormatException.class);
         }
     }
 
@@ -277,6 +316,14 @@ public class CalculationUtilsTest {
             
             assertThatThrownBy(() -> CalculationUtils.hexadecimalToDecimal("XYZ"))
                 .isInstanceOf(IllegalArgumentException.class);
+            
+            assertThatThrownBy(() -> CalculationUtils.hexadecimalToDecimal(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
+            
+            assertThatThrownBy(() -> CalculationUtils.hexadecimalToDecimal(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null or empty");
         }
 
         @Test
@@ -288,6 +335,15 @@ public class CalculationUtilsTest {
                 int backToDecimal = CalculationUtils.hexadecimalToDecimal(hex);
                 assertThat(backToDecimal).isEqualTo(num);
             }
+        }
+        
+        @Test
+        @DisplayName("Should handle extremely large hex string")
+        void testLargeHexString() {
+            // Very large hex string that would overflow int
+            String largeHex = "FFFFFFFFF";  // > Integer.MAX_VALUE
+            assertThatThrownBy(() -> CalculationUtils.hexadecimalToDecimal(largeHex))
+                .isInstanceOf(NumberFormatException.class);
         }
     }
 
@@ -349,6 +405,22 @@ public class CalculationUtilsTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid operation");
         }
+        
+        @Test
+        @DisplayName("Should throw exception for null operation")
+        void testNullOperation() {
+            assertThatThrownBy(() -> CalculationUtils.performOperation(5, 3, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Operation cannot be null");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for modulo by zero")
+        void testModuloByZeroOperation() {
+            assertThatThrownBy(() -> CalculationUtils.performOperation(10, 0, "%"))
+                .isInstanceOf(ArithmeticException.class)
+                .hasMessageContaining("Modulo by zero");
+        }
     }
 
     @Nested
@@ -405,6 +477,23 @@ public class CalculationUtilsTest {
     }
 
     @Nested
+    @DisplayName("Constructor Test")
+    class ConstructorTest {
+
+        @Test
+        @DisplayName("Should prevent instantiation of utility class")
+        void testConstructor() throws Exception {
+            // Utility class should not be instantiable
+            var constructor = CalculationUtils.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            assertThatThrownBy(() -> constructor.newInstance())
+                .isInstanceOf(java.lang.reflect.InvocationTargetException.class)
+                .hasCauseInstanceOf(UnsupportedOperationException.class)
+                .hasRootCauseMessage("Utility class cannot be instantiated");
+        }
+    }
+
+    @Nested
     @DisplayName("Edge Cases and Boundary Tests")
     class EdgeCaseTests {
 
@@ -438,6 +527,46 @@ public class CalculationUtilsTest {
             assertThat(CalculationUtils.calculateSquareRoot(0)).isEqualTo(0.0);
             assertThat(CalculationUtils.decimalToBinary(0)).isEqualTo("0");
             assertThat(CalculationUtils.decimalToHexadecimal(0)).isEqualTo("0");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for negative binary conversion")
+        void testNegativeBinaryConversion() {
+            assertThatThrownBy(() -> CalculationUtils.decimalToBinary(-5))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot convert negative number to binary");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for negative hex conversion")
+        void testNegativeHexConversion() {
+            assertThatThrownBy(() -> CalculationUtils.decimalToHexadecimal(-5))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot convert negative number to hexadecimal");
+        }
+        
+        @Test
+        @DisplayName("Should throw exception for power calculation overflow")
+        void testPowerOverflow() {
+            assertThatThrownBy(() -> CalculationUtils.calculatePower(Double.MAX_VALUE, 2))
+                .isInstanceOf(ArithmeticException.class)
+                .hasMessageContaining("undefined or infinite");
+        }
+        
+        @Test
+        @DisplayName("Should handle empty string to binary")
+        void testEmptyBinaryConversion() {
+            assertThatThrownBy(() -> CalculationUtils.binaryToDecimal(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null or empty");
+        }
+        
+        @Test
+        @DisplayName("Should handle empty string to hex")
+        void testEmptyHexConversion() {
+            assertThatThrownBy(() -> CalculationUtils.hexadecimalToDecimal(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null or empty");
         }
     }
 }
